@@ -3,7 +3,8 @@ import React, { Component } from 'react';
 import { FaPlus, FaGithub } from 'react-icons/fa';
 
 import { Link } from 'react-router-dom';
-import { Container, Form, FormButton, List } from './styles';
+import Container from '../../components/Container';
+import { Form, FormButton, List } from './styles';
 import api from '../../services/api';
 
 export default class Home extends Component {
