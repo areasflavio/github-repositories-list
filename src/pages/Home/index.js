@@ -2,18 +2,75 @@ import React, { Component } from 'react';
 
 import { FaPlus, FaGithub } from 'react-icons/fa';
 
+import { Link } from 'react-router-dom';
 import { Container, Form, FormButton, List } from './styles';
+import api from '../../services/api';
 
 export default class Home extends Component {
   constructor() {
     super();
     this.state = {
-      newRepository: 'facebook/react',
+      newRepository: '',
+      repositories: [],
+      errorLog: '',
     };
   }
 
+  componentDidMount() {
+    const localRepositories = localStorage.getItem('repositories');
+
+    if (localRepositories) {
+      this.setState({ repositories: JSON.parse(localRepositories) });
+    }
+  }
+
+  componentDidUpdate(_, prevState) {
+    const { repositories } = this.state;
+
+    if (prevState.repositories !== repositories) {
+      localStorage.setItem('repositories', JSON.stringify(repositories));
+    }
+  }
+
+  handleInputChange = (e) => {
+    this.setState({ newRepository: e.target.value });
+  };
+
+  handleRequestRepository = async (e) => {
+    e.preventDefault();
+
+    try {
+      const { newRepository, repositories } = this.state;
+
+      const response = await api.get(`/repos/${newRepository}`);
+
+      const repoData = {
+        name: response.data.full_name,
+      };
+
+      const duplicate = await repositories.find(
+        (repository) => repository.name === repoData.name
+      );
+
+      if (duplicate) {
+        throw new Error('Repositório duplicado');
+      }
+
+      this.setState({
+        repositories: [...repositories, repoData],
+        newRepository: '',
+      });
+    } catch (err) {
+      if (err.message === 'Request failed with status code 404') {
+        this.setState({ errorLog: 'Repositório não encontrado' });
+      } else {
+        this.setState({ errorLog: err.message });
+      }
+    }
+  };
+
   render() {
-    const { newRepository } = this.state;
+    const { newRepository, repositories, errorLog } = this.state;
 
     return (
       <Container>
@@ -21,21 +78,29 @@ export default class Home extends Component {
           <FaGithub size={64} color="#0D1117" />
           REPOSITÓRIOS FAVORITOS
         </h1>
-        <Form>
-          <input placeholder="Adicione um repositório" />
-          <FormButton type="button">
+        <Form onSubmit={this.handleRequestRepository}>
+          <input
+            type="text"
+            value={newRepository}
+            placeholder="Adicione um repositório"
+            onChange={this.handleInputChange}
+          />
+          <FormButton type="submit">
             <FaPlus size={20} color="#f0f6fc" />
           </FormButton>
         </Form>
+
+        <small>{errorLog}</small>
+
         <List>
-          <li>
-            <h2>{newRepository}</h2>
-            <a href="/">Visualizar</a>
-          </li>
-          <li>
-            <h2>{newRepository}</h2>
-            <a href="/">Visualizar</a>
-          </li>
+          {repositories.map((repository) => (
+            <li key={repository.name}>
+              <h2>{repository.name}</h2>
+              <Link to={`/repository/${encodeURIComponent(repository.name)}`}>
+                Visualizar
+              </Link>
+            </li>
+          ))}
         </List>
       </Container>
     );
