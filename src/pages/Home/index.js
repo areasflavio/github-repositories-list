@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-import { FaPlus, FaGithub } from 'react-icons/fa';
+import { FaPlus, FaGithub, FaArrowRight, FaTrash } from 'react-icons/fa';
 
 import { Link } from 'react-router-dom';
 import Container from '../../components/Container';
@@ -70,6 +70,16 @@ export default class Home extends Component {
     }
   };
 
+  handleDeleteRepository = (name) => {
+    const { repositories } = this.state;
+
+    const filteredRepositories = repositories.filter(
+      (repository) => repository.name !== name
+    );
+
+    this.setState({ repositories: filteredRepositories });
+  };
+
   render() {
     const { newRepository, repositories, errorLog } = this.state;
 
@@ -97,9 +107,16 @@ export default class Home extends Component {
           {repositories.map((repository) => (
             <li key={repository.name}>
               <h2>{repository.name}</h2>
-              <Link to={`/repository/${encodeURIComponent(repository.name)}`}>
-                Visualizar
-              </Link>
+              <div>
+                <Link to={`/repository/${encodeURIComponent(repository.name)}`}>
+                  <FaArrowRight size={16} color="#0D1117" />
+                </Link>
+                <FaTrash
+                  size={16}
+                  color="#999"
+                  onClick={() => this.handleDeleteRepository(repository.name)}
+                />
+              </div>
             </li>
           ))}
         </List>

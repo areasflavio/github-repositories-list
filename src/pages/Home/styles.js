@@ -48,15 +48,7 @@ export const List = styled.ul`
     }
 
     a {
-      text-decoration: none;
-      color: #0d1117;
-      font-weight: bold;
-
-      transition: all 0.4s;
-
-      &:hover {
-        text-decoration: underline;
-      }
+      margin-right: 8px;
     }
   }
 `;

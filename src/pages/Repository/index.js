@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
-import { FaArrowLeft } from 'react-icons/fa';
+import { FaArrowLeft, FaExternalLinkAlt } from 'react-icons/fa';
 
 import Container from '../../components/Container';
 import api from '../../services/api';
@@ -33,7 +33,7 @@ export default class Repository extends Component {
   }
 
   handleStateFilter = async (e) => {
-    await this.setState({ stateParam: e.target.innerHTML });
+    await this.setState({ stateParam: e.target.innerHTML, currentPage: 1 });
 
     this.apiRequest();
   };
@@ -85,7 +85,7 @@ export default class Repository extends Component {
     return (
       <Container>
         <Link to="/">
-          <FaArrowLeft color="#0d1117" size={14} />
+          <FaArrowLeft color="#0d1117" size={16} />
         </Link>
 
         <InfoHeader>
@@ -115,7 +115,7 @@ export default class Repository extends Component {
                 <small>{issue.user.login}</small>
               </div>
               <a href={issue.url} target="__blank" rel="noreferrer">
-                Ver no Github
+                <FaExternalLinkAlt color="#0d1117" size={16} />
               </a>
             </li>
           ))}
