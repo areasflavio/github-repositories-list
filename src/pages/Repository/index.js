@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 
 import {
   FaArrowLeft,
+  FaArrowRight,
   FaExternalLinkAlt,
   FaSpinner,
   FaStar,
@@ -49,7 +50,11 @@ export default class Repository extends Component {
   }
 
   handleStateFilter = async (e) => {
-    await this.setState({ stateParam: e.target.innerHTML, currentPage: 1 });
+    const buttonText = e.target.innerText;
+
+    const filter = buttonText.split(' ');
+
+    await this.setState({ stateParam: filter[0], currentPage: 1 });
 
     this.apiRequest();
   };
@@ -57,7 +62,7 @@ export default class Repository extends Component {
   handlePageNavigate = async (e) => {
     const { currentPage } = this.state;
 
-    if (e.target.innerHTML === 'Previous page') {
+    if (e.target.innerText === 'Previous page') {
       await this.setState({
         currentPage: currentPage > 1 ? currentPage - 1 : currentPage,
       });
@@ -182,7 +187,7 @@ export default class Repository extends Component {
                   ))}
                 </LabelsDiv>
               </IssueInfo>
-              <a href={issue.url} target="__blank" rel="noreferrer">
+              <a href={issue.html_url} target="__blank" rel="noreferrer">
                 <FaExternalLinkAlt size={16} />
               </a>
             </li>
@@ -196,6 +201,7 @@ export default class Repository extends Component {
             active={currentPage !== 1}
             disable={currentPage === 1}
           >
+            <FaArrowLeft size={16} />
             Previous page
           </Button>
           <div>
@@ -203,6 +209,7 @@ export default class Repository extends Component {
           </div>
           <Button type="button" onClick={this.handlePageNavigate} active>
             Next page
+            <FaArrowRight size={16} />
           </Button>
         </ButtonGroup>
       </Container>

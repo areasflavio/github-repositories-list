@@ -119,6 +119,10 @@ export const ButtonGroup = styled.div`
 `;
 
 export const Button = styled.button`
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+
   background: ${(props) => (props.active ? '#0d1117' : '#999')};
   font-weight: ${(props) => (props.active ? 'bold' : 'normal')};
 
