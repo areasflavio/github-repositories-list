@@ -2,12 +2,28 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
-import { FaArrowLeft, FaExternalLinkAlt } from 'react-icons/fa';
+import {
+  FaArrowLeft,
+  FaExternalLinkAlt,
+  FaSpinner,
+  FaStar,
+  FaEye,
+} from 'react-icons/fa';
+import { CgGitFork, CgFileDocument } from 'react-icons/cg';
 
 import Container from '../../components/Container';
 import api from '../../services/api';
 
-import { Loading, IssuesList, InfoHeader, ButtonGroup } from './styles';
+import {
+  Loading,
+  IssuesList,
+  InfoHeader,
+  ButtonGroup,
+  Button,
+  IssueInfo,
+  LabelsDiv,
+  Label,
+} from './styles';
 
 export default class Repository extends Component {
   constructor() {
@@ -74,13 +90,18 @@ export default class Repository extends Component {
   }
 
   render() {
-    const { issues, repository, loading, currentPage } = this.state;
+    const { issues, repository, loading, currentPage, stateParam } = this.state;
 
     if (loading) {
-      return <Loading>Carregando...</Loading>;
+      return (
+        <>
+          <Loading>
+            <FaSpinner size={64} color="#f0f6fc" />
+            <h1>Loading...</h1>
+          </Loading>
+        </>
+      );
     }
-
-    // console.log(issues);
 
     return (
       <Container>
@@ -91,46 +112,98 @@ export default class Repository extends Component {
         <InfoHeader>
           <img src={repository.owner.avatar_url} alt={repository.owner.login} />
 
-          <h1>{repository.full_name}</h1>
+          <a href={repository.html_url} target="__blank" rel="noreferrer">
+            {repository.full_name}
+          </a>
+
+          <p>{repository.description}</p>
+
+          <div>
+            <span>
+              <FaEye size={20} />
+              {repository.subscribers_count} Watch
+            </span>
+            <span>
+              <CgGitFork size={24} />
+              {repository.forks} Fork
+            </span>
+            <span>
+              <FaStar size={20} />
+              {repository.watchers} Star
+            </span>
+            <span>
+              <CgFileDocument size={20} />
+              {repository.license.name}
+            </span>
+          </div>
         </InfoHeader>
 
         <ButtonGroup>
-          <button type="button" onClick={this.handleStateFilter}>
-            all
-          </button>
-          <button type="button" onClick={this.handleStateFilter}>
+          <Button
+            type="button"
+            onClick={this.handleStateFilter}
+            active={stateParam === 'all'}
+          >
+            all issues
+          </Button>
+          <Button
+            type="button"
+            onClick={this.handleStateFilter}
+            active={stateParam === 'open'}
+          >
             open
-          </button>
-          <button type="button" onClick={this.handleStateFilter}>
+          </Button>
+          <Button
+            type="button"
+            onClick={this.handleStateFilter}
+            active={stateParam === 'closed'}
+          >
             closed
-          </button>
+          </Button>
         </ButtonGroup>
 
         <IssuesList>
           {issues.map((issue) => (
-            <li key={issue.id}>
+            <li key={String(issue.id)}>
               <img src={issue.user.avatar_url} alt={issue.user.login} />
-              <div>
-                <strong>{issue.title}</strong>
-                <small>{issue.user.login}</small>
-              </div>
+              <IssueInfo>
+                <header>
+                  <strong>{issue.title}</strong>
+                  <small>{issue.user.login}</small>
+                </header>
+                <LabelsDiv>
+                  {issue.labels.map((label) => (
+                    <Label
+                      key={String(label.id)}
+                      style={{ background: `#${label.color}` }}
+                    >
+                      {label.name}
+                    </Label>
+                  ))}
+                </LabelsDiv>
+              </IssueInfo>
               <a href={issue.url} target="__blank" rel="noreferrer">
-                <FaExternalLinkAlt color="#0d1117" size={16} />
+                <FaExternalLinkAlt size={16} />
               </a>
             </li>
           ))}
         </IssuesList>
 
         <ButtonGroup>
-          <button type="button" onClick={this.handlePageNavigate}>
+          <Button
+            type="button"
+            onClick={this.handlePageNavigate}
+            active={currentPage !== 1}
+            disable={currentPage === 1}
+          >
             Previous page
-          </button>
+          </Button>
           <div>
             <h2>{currentPage}</h2>
           </div>
-          <button type="button" onClick={this.handlePageNavigate}>
+          <Button type="button" onClick={this.handlePageNavigate} active>
             Next page
-          </button>
+          </Button>
         </ButtonGroup>
       </Container>
     );

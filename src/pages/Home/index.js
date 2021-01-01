@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 
-import { FaPlus, FaGithub, FaArrowRight, FaTrash } from 'react-icons/fa';
+import { FaPlus, FaGithub, FaTrash, FaSpinner } from 'react-icons/fa';
 
 import { Link } from 'react-router-dom';
 import Container from '../../components/Container';
-import { Form, FormButton, List } from './styles';
+import { Form, FormButton, List, Input, ErrorLabel } from './styles';
 import api from '../../services/api';
 
 export default class Home extends Component {
@@ -14,6 +14,8 @@ export default class Home extends Component {
       newRepository: '',
       repositories: [],
       errorLog: '',
+      hasError: false,
+      loading: false,
     };
   }
 
@@ -43,10 +45,13 @@ export default class Home extends Component {
     try {
       const { newRepository, repositories } = this.state;
 
+      this.setState({ loading: true });
+
       const response = await api.get(`/repos/${newRepository}`);
 
       const repoData = {
         name: response.data.full_name,
+        avatar_url: response.data.owner.avatar_url,
       };
 
       const duplicate = await repositories.find(
@@ -54,19 +59,26 @@ export default class Home extends Component {
       );
 
       if (duplicate) {
-        throw new Error('Repositório duplicado');
+        throw new Error('Duplicate repository');
       }
 
       this.setState({
         repositories: [...repositories, repoData],
         newRepository: '',
+        hasError: false,
+        errorLog: '',
+        loading: false,
       });
     } catch (err) {
       if (err.message === 'Request failed with status code 404') {
-        this.setState({ errorLog: 'Repositório não encontrado' });
+        this.setState({
+          errorLog: 'Repository not found',
+        });
       } else {
         this.setState({ errorLog: err.message });
       }
+
+      this.setState({ loading: false, hasError: true });
     }
   };
 
@@ -81,42 +93,52 @@ export default class Home extends Component {
   };
 
   render() {
-    const { newRepository, repositories, errorLog } = this.state;
+    const {
+      newRepository,
+      repositories,
+      errorLog,
+      hasError,
+      loading,
+    } = this.state;
+
+    // console.log(repositories);
 
     return (
       <Container>
         <h1>
           <FaGithub size={64} color="#0D1117" />
-          REPOSITÓRIOS FAVORITOS
         </h1>
         <Form onSubmit={this.handleRequestRepository}>
-          <input
+          <Input
             type="text"
             value={newRepository}
-            placeholder="Adicione um repositório"
+            placeholder="Add a repository"
             onChange={this.handleInputChange}
+            error={hasError}
           />
-          <FormButton type="submit">
-            <FaPlus size={20} color="#f0f6fc" />
+          <FormButton type="submit" loading={loading}>
+            {loading ? (
+              <FaSpinner size={20} color="#f0f6fc" />
+            ) : (
+              <FaPlus size={20} color="#f0f6fc" />
+            )}
           </FormButton>
         </Form>
 
-        <small>{errorLog}</small>
+        <ErrorLabel>{errorLog}</ErrorLabel>
 
         <List>
           {repositories.map((repository) => (
             <li key={repository.name}>
-              <h2>{repository.name}</h2>
-              <div>
-                <Link to={`/repository/${encodeURIComponent(repository.name)}`}>
-                  <FaArrowRight size={16} color="#0D1117" />
-                </Link>
-                <FaTrash
-                  size={16}
-                  color="#999"
-                  onClick={() => this.handleDeleteRepository(repository.name)}
-                />
-              </div>
+              <Link to={`/repository/${encodeURIComponent(repository.name)}`}>
+                <img src={repository.avatar_url} alt={repository.name} />
+                {repository.name}
+              </Link>
+
+              <FaTrash
+                size={10}
+                onClick={() => this.handleDeleteRepository(repository.name)}
+              />
             </li>
           ))}
         </List>
